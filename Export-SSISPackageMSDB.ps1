@@ -1,4 +1,4 @@
-﻿function Export-SSISPackageMSDB
+function Get-SSISPackageMSDB
 {
 param
 (
@@ -112,7 +112,7 @@ $PackagesQueryDisplayOnly = "WITH cte AS
 
 
 
-Write-Output "SSIS Packages being retrieved;"
+Write-Output "SSIS Packages being retrieved..."
 
 if($DisplayOnly)
 {
@@ -148,8 +148,14 @@ else
             $i = 0
             foreach($package in $packages)
             {
+                # Create folder representing SSIS folder if not exists
+                if(-not (Test-Path -Path ($($OutputDir) + '\' + $($package.FolderPath))))
+                {
+                    Write-Output "Creating subfolder $($package.FolderPath)"
+                    New-Item -Path ($($OutputDir) + '\' + $($package.FolderPath)) -ItemType Directory | Out-Null
+                }
 
-                $package.pkg | Out-File -Force -Encoding ASCII -FilePath ("" + $($OutputDir) + $($package.Name) + ".dtsx")
+                $package.pkg | Out-File -Force -Encoding ASCII -FilePath ("" + $($OutputDir) + '\' + $($package.FolderPath) + '\' +  $($package.Name) + ".dtsx")
 
                 $i++
             }
@@ -194,15 +200,19 @@ Switch parameter that causes function to just output a list of SSIS package fold
 No direct outputs from fuction - returns list of SSIS packages or writes .dtsx files.
 
 .EXAMPLE
-PS> Export-SSISPackageMSDB -Instance MYSQL2008SERVER -OutputDir "C:\DBA\SSIS\Export\"
+PS> Get-SSISPackage -Instance HOSQUESTION\TIME -OutputDir "D:\DBA\SSIS\Export\"
 
-Exports all SSIS packages from MYSQL2008SERVER as .dtsx files to C:\DBA\SSIS\Export\ 
+Exports all SSIS packages from HOSQUESTION\TIME as .dtsx files to D:\DBA\SSIS\Export\ 
 
 .EXAMPLE
-PS> Export-SSISPackageMSDB -Instance MYSQL2008SERVER -DisplayOnly
+PS> Get-SSISPackage -Instance HOSSNAKE\ADDER -DisplayOnly
 
-Displays list of SSIS packages on MYSQL2008SERVER
+Displays list of SSIS packages on HOSSNAKE\ADDER
 #>
 
 }
 
+
+
+
+ Get-SSISPackageMSDB -Instance SQL2017 -OutputDir "D:\OutputDir\ServerName\"
